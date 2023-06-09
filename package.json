@@ -1,0 +1,28 @@
+{
+  "name": "employee_tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "chalk": "^5.2.0",
+    "dotenv": "^16.1.4",
+    "express": "^4.18.2",
+    "figlet": "^1.6.0",
+    "inquirer": "^9.2.7",
+    "mysql2": "^3.3.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AmyEdmond/Employee_Tracker.git"
+  },
+  "author": "Amanda Edmond",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AmyEdmond/Employee_Tracker/issues"
+  },
+  "homepage": "https://github.com/AmyEdmond/Employee_Tracker#readme"
+}
