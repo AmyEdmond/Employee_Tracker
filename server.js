@@ -222,13 +222,13 @@ function updEmpRole() {
       inquirer
         .prompt([
           {
-            type: "rawlist",
+            type: "list",
             message: "Which employee would you like to update?",
             name: "employee",
             choices: employees,
           },
           {
-            type: "rawlist",
+            type: "list",
             message: "What is the employee's new role?",
             name: "newRole",
             choices: roles,
