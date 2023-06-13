@@ -125,86 +125,131 @@ function addDept () {
     .then(viewDept())  })
 }
 
-function addRole () {
-   //const departments = res.map(department => ({name: department.name, value: department.department_id }));
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        message: "Which role would you like to add?",
-        name: "title",
-      },
-      {
-        type: "input",
-        message: "What is the salary for this role?",
-        name: "roleSalary",
-      },
-      {
-        type: "rawlist",
-        message: "Which department does this role belong too?",
-        name: "deptName",
-        choices: departments,
-      },
-    ])
-    .then((res) => {
-      db.promise()
-        .query("INSERT INTO role SET ?", {
-          title: res.title,
-          salary: res.roleSalary,
-          department_id: res.deptName,
-        })
-        .then(viewRoles());
-    });
-  
+function addRole() {
+  db.query("SELECT * FROM department", (err,res) => {
+    const departments = res.map((department) => ({
+      name: department.name,
+      value: department.department_id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          message: "Which role would you like to add?",
+          name: "title",
+        },
+        {
+          type: "input",
+          message: "What is the salary for this role?",
+          name: "roleSalary",
+        },
+        {
+          type: "list",
+          message: "Which department does this role belong too?",
+          name: "deptName",
+          choices: departments,
+        },
+      ])
+      .then((res) => {
+        db.promise()
+          .query("INSERT INTO role SET ?", {
+            title: res.title,
+            salary: res.roleSalary,
+            department_id: res.deptName,
+          })
+          .then(viewRoles());
+      });
+  });
 }
 
-function addEmp () {
-  inquirer.prompt([
-   { type: 'input',
-    message: "Employee first name",
-    name: 'firstName'
-    },
-    { type: 'input',
-    message: "Employee last name",
-    name: 'lastName'
-    },
+function addEmp() {
+  db.query("SELECT * FROM role", (err,res) => {
+    if (err) throw err;
+    const roles = res.map((role) => (
     {
-      type: "rawlist",
-      name: "roleOptions",
-      message: "What is the employee's role?",
-      choices: roles
-    }
-    
-  ])
-  .then((res) => {
-    db.promise()
-      .query("INSERT INTO employee SET ?", {
-        first_name: res.firstName,
-        last_name: res.lastName,
-        role_id: res.roleOptions,
-      })
-      .then(viewEmp());
+      name: role.title,
+      value: role.role_id,
+    }));
+    db.query("SELECT * FROM employee", (err,res) => {
+        if (err) throw err;
+      const employees = res.map((employee) => ({
+        name: employee.first_name + " " + employee.last_name,
+        value: employee.employee_id,
+      }));
+      inquirer
+        .prompt([
+            { type: "input", 
+                message: "Employee first name", 
+                name: "firstName" 
+            },
+            { type: "input", 
+                message: "Employee last name", 
+                name: "lastName" 
+            },
+            {
+            type: "list",
+            name: "roleOptions",
+            message: "What is the employee's role?",
+            choices: roles,
+          },
+        ])
+        .then((res) => {
+          db.promise()
+            .query("INSERT INTO employee SET ?", {
+              first_name: res.firstName,
+              last_name: res.lastName,
+              role_id: res.roleOptions,
+            })
+            .then(viewEmp());
+        });
+    });
   });
 }
 
 function updEmpRole() {
-    
-    inquirer.prompt([
-        { type: 'rawlist',
-         message: 'Which employee would you like to update?',
-         name: 'employee',
-         choices: employees
-
-         },
-         { type: 'rawlist',
-         message: 'What is the employee\'s new role?',
-         name: 'newRole',
-         choices: roles
-         },
-                 
-       ])
-       db.promise().query('SELECT * FROM employee')
-  }
+  db.query("SELECT * FROM role", (err,res) => {
+    if (err) throw err;
+    const roles = res.map((role) => ({
+      name: role.title,
+      value: role.role_id,
+    }));
+    db.query("SELECT * FROM employee", (err,res) => {
+        if (err) throw err;
+      const employees = res.map((employee) => ({
+        name: employee.first_name + " " + employee.last_name,
+        value: employee.employee_id,
+      }));
+      inquirer
+        .prompt([
+          {
+            type: "rawlist",
+            message: "Which employee would you like to update?",
+            name: "employee",
+            choices: employees,
+          },
+          {
+            type: "rawlist",
+            message: "What is the employee's new role?",
+            name: "newRole",
+            choices: roles,
+          },
+        ])
+        .then((res) => {
+          db.promise()
+            .query(
+              "UPDATE employee SET ? WHERE ?",
+              {
+                role_id: res.newRole,
+              },
+              {
+                employee_id: res.employee,
+              }
+            )
+            .then(viewEmp());
+        });
+    });
+  });
+}
 //to delete data by id: delete from customers where id = 1
 
 
