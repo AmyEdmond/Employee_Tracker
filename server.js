@@ -1,14 +1,10 @@
-import express from "express";
-//express = require('express');
-// Import and require mysql2
-//const mysql = require('mysql2');
 import mysql from "mysql2";
-//require('dotenv').config();
 import dotenv from "dotenv";
 dotenv.config();
 import inquirer from "inquirer";
 import chalk from 'chalk';
 import figlet from 'figlet';
+
 
 // Connect to database
 const db = mysql.createConnection(
@@ -76,7 +72,7 @@ inquirer
         break;
 
       case "Update employee role":
-        updEmp();
+        updEmpRole();
         break;
 
       case 'Exit':
@@ -124,45 +120,42 @@ function addDept () {
   .then((res) => {db.promise().query(`INSERT INTO department SET ?`,
         {
           name: res.newDept,
-        },
-        viewDept();
-      )})
-
-  
-  
+        }
+      )
+    .then(viewDept())  })
 }
 
 function addRole () {
-  inquirer.prompt([
-   { type: 'input',
-    message: "Which role would you like to add?",
-    name: 'newRole'
-    },
-    { type: 'input',
-    message: "What is the salary for this role?",
-    name: 'roleSalary'
-    },
-    { type: 'list',
-    message: "Which department does this role belong too?",
-    name: 'deptName',
-    choices: [
-      'HR',
-      'Engineering',
-      'Service',
-      'Sales',
-      'IT',
-      'Finance'
-    ]
-    }  
-  ])
-  .then((res) => db.promise().query('INSERT INTO role SET ?', {
-    title: res.newRole,
-    salary: res.roleSalary,
-    department_id: res.deptName
-  }
+   //const departments = res.map(department => ({name: department.name, value: department.department_id }));
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "Which role would you like to add?",
+        name: "title",
+      },
+      {
+        type: "input",
+        message: "What is the salary for this role?",
+        name: "roleSalary",
+      },
+      {
+        type: "rawlist",
+        message: "Which department does this role belong too?",
+        name: "deptName",
+        choices: departments,
+      },
+    ])
+    .then((res) => {
+      db.promise()
+        .query("INSERT INTO role SET ?", {
+          title: res.title,
+          salary: res.roleSalary,
+          department_id: res.deptName,
+        })
+        .then(viewRoles());
+    });
   
-  ));
-  viewRoles();
 }
 
 function addEmp () {
@@ -176,17 +169,42 @@ function addEmp () {
     name: 'lastName'
     },
     {
-      type: "list",
+      type: "rawlist",
       name: "roleOptions",
-      message: "What would you like to do?",
-      choices: role
+      message: "What is the employee's role?",
+      choices: roles
     }
     
   ])
-  .then((res) => db.promise().query('INSERT INTO employee'));
-  viewEmp();
+  .then((res) => {
+    db.promise()
+      .query("INSERT INTO employee SET ?", {
+        first_name: res.firstName,
+        last_name: res.lastName,
+        role_id: res.roleOptions,
+      })
+      .then(viewEmp());
+  });
 }
 
+function updEmpRole() {
+    
+    inquirer.prompt([
+        { type: 'rawlist',
+         message: 'Which employee would you like to update?',
+         name: 'employee',
+         choices: employees
+
+         },
+         { type: 'rawlist',
+         message: 'What is the employee\'s new role?',
+         name: 'newRole',
+         choices: roles
+         },
+                 
+       ])
+       db.promise().query('SELECT * FROM employee')
+  }
 //to delete data by id: delete from customers where id = 1
 
 
