@@ -42,6 +42,7 @@ inquirer
       "Add a role",
       "Add employee",
       "Update employee role",
+      "Delete employee",
       "Exit"
     ]
   }])
@@ -74,6 +75,9 @@ inquirer
       case "Update employee role":
         updEmpRole();
         break;
+        case "Delete employee":
+        delEmp();
+        break;
 
       case 'Exit':
         connection.end();
@@ -103,7 +107,7 @@ function viewRoles () {
 }
 
 function viewEmp () {
-  db.promise().query('SELECT employee.first_name, employee.last_name, role.title, department.name AS department, role.salary FROM employee LEFT JOIN role ON employee.role_id=role.id LEFT JOIN department ON role.department_id=department.id')
+  db.promise().query(`SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee LEFT JOIN role ON employee.role_id=role.id LEFT JOIN department ON role.department_id=department.id  LEFT JOIN employee manager ON manager.id = employee.manager_id`)
   .then(res => {
     console.table(res[0])
     questions();
@@ -129,7 +133,7 @@ function addRole() {
   db.query("SELECT * FROM department", (err,res) => {
     const departments = res.map((department) => ({
       name: department.name,
-      value: department.department_id,
+      value: department.id,
     }));
     inquirer
       .prompt([
@@ -168,13 +172,13 @@ function addEmp() {
     const roles = res.map((role) => (
     {
       name: role.title,
-      value: role.role_id,
+      value: role.id,
     }));
     db.query("SELECT * FROM employee", (err,res) => {
         if (err) throw err;
       const employees = res.map((employee) => ({
         name: employee.first_name + " " + employee.last_name,
-        value: employee.employee_id,
+        value: employee.id,
       }));
       inquirer
         .prompt([
@@ -190,8 +194,14 @@ function addEmp() {
             type: "list",
             name: "roleOptions",
             message: "What is the employee's role?",
-            choices: roles,
+            choices: roles
           },
+          {
+            type: "list",
+            name: "managerOptions",
+            message: "Who is the employee's manager?",
+            choices: employees
+          }
         ])
         .then((res) => {
           db.promise()
@@ -199,6 +209,7 @@ function addEmp() {
               first_name: res.firstName,
               last_name: res.lastName,
               role_id: res.roleOptions,
+              manager_id: res.managerOptions
             })
             .then(viewEmp());
         });
@@ -211,13 +222,13 @@ function updEmpRole() {
     if (err) throw err;
     const roles = res.map((role) => ({
       name: role.title,
-      value: role.role_id,
+      value: role.id,
     }));
     db.query("SELECT * FROM employee", (err,res) => {
         if (err) throw err;
       const employees = res.map((employee) => ({
         name: employee.first_name + " " + employee.last_name,
-        value: employee.employee_id,
+        value: employee.id,
       }));
       inquirer
         .prompt([
@@ -237,20 +248,53 @@ function updEmpRole() {
         .then((res) => {
           db.promise()
             .query(
-              "UPDATE employee SET ? WHERE ?",
-              {
-                role_id: res.newRole,
-              },
-              {
-                employee_id: res.employee,
-              }
+              `UPDATE employee SET ? WHERE ?`,
+            [
+                {
+                    role_id: res.newRole,
+                },
+                {
+                    id: res.employee,
+                }
+            ],
             )
             .then(viewEmp());
         });
     });
   });
 }
-//to delete data by id: delete from customers where id = 1
+
+function delEmp() {
+    db.query("SELECT * FROM employee", (err,res) => {
+        if(err) throw err;
+        const employees = res.map((employee) => ({
+            name: employee.first_name + " " + employee.last_name,
+            value: employee.id,
+          }));
+    inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "employee",
+        message: "Which employee would you like to delete?",
+        choices: employees
+      }
+    ]).then((res) => {
+        db.promise()
+          .query(
+            `DELETE FROM employee WHERE ?`,
+          [
+              {
+                  id: res.employee,
+              }
+          ],
+          )
+          .then(viewEmp());
+      
+      });
+    });
+}
+
 
 
 

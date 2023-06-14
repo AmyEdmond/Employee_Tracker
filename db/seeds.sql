@@ -17,11 +17,11 @@ VALUES
 
 
 
-INSERT INTO employee (first_name, last_name, role_id)
-VALUES ("Jean", "Paul", 1),
-       ("John", "Q", 2),
-       ("Valerie", "Richard", 3),
-       ("Kelly", "Knowles", 4),
-       ("Darcy", "Lennon", 5),
-        ("Maya", "Badou", 6);
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
+VALUES ("Jean", "Paul", 1, NULL),
+       ("John", "Q", 2, NULL),
+       ("Valerie", "Richard", 3, 1),
+       ("Kelly", "Knowles", 4, 1),
+       ("Darcy", "Lennon", 5, 2),
+        ("Maya", "Badou", 6, 1);
        
