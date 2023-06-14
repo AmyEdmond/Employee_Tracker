@@ -46,8 +46,8 @@ inquirer
       "Exit"
     ]
   }])
-  .then((answer) => { 
-     switch (answer.userOptions) {
+  .then((res) => { 
+     switch (res.userOptions) {
       case "View all departments":
         viewDept();
         break;
@@ -80,8 +80,9 @@ inquirer
         break;
 
       case 'Exit':
-        connection.end();
+        db.end();
         break;
+        
      }
   })
   .catch((err) => console.log(err));
